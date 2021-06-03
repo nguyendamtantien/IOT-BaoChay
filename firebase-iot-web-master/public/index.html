@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <!-- <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> -->
+        <link rel="shortcut icon" type="image/png" href="/favicon.png"/>
+        <!-- Bootstrap Material Design -->
+        <link rel="stylesheet"
+              href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css"
+              integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX"
+              crossorigin="anonymous">
+        <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+        <script src="https://www.gstatic.com/firebasejs/5.6.0/firebase.js"></script>
+        <script src="https://code.iconify.design/1/1.0.6/iconify.min.js"></script>
+        <style>
+            body {
+                background-color: #c7c7c7 !important;
+            }
+            .card {
+                margin: 0 auto; /* Added */
+                float: none; /* Added */
+                margin-bottom: 10px; /* Added */
+                margin-top: 50px
+            }
+        </style>
+        <title>Hệ Thống Báo Cháy</title>
+    </head>
+    <body>
+        <!-- Page Wrapper -->
+<!-- <div id="wrapper"> -->
+
+    <!-- Sidebar -->
+
+        <!-- Sidebar - Brand -->
+        <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+            <div class="sidebar-brand-icon rotate-n-15">
+                <!-- <i class="fas fa-laugh-wink"></i> -->
+                <span class="iconify" data-icon="flat-color-icons:like" data-height="40" data-inline="false"></span>
+            </div>
+            <div class="title">Hệ Thống Chống Cháy</div>    
+            
+        </a>
+      
+        <div class="row">
+            <div class="col-sm-6"> <!-- Temperature Column -->
+                <div class="card text-white bg-warning mb-3" style="max-width: 20rem;">
+                    <div style="font-size: 20px;" class="card-header">Nhiệt Độ</div>
+                    <div class="card-body">
+                        <!-- <h1 id="temperature" style="font-size: 100px;" class="card-title">°C</h1> -->
+                        <span id="temperature" style="font-size: 100px;" class="card-title"></span>
+                        <span class="iconify" data-icon="mdi:temperature-celsius" data-height="64" data-inline="false"></span>
+                        <p class="card-text">Nhiệt độ tính bằng độ C.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6"> <!-- Humidity Column -->
+                <div class="card text-white bg-primary mb-3" style="max-width: 20rem;">
+                    <div style="font-size: 20px;" class="card-header">Độ Ẩm</div>
+                    <div class="card-body">
+                        <!-- <h1 id="humidity" style="font-size: 75px;" class="card-title">%</h1> -->
+                        <span id="humidity" style="font-size: 100px;" class="card-title"></span>
+                        <span class="iconify" data-icon="mdi:percent-outline" data-height="64" data-inline="false"></span>
+                        <p class="card-text">Độ ẩm tương đối, tính bằng phần trăm.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Needed for Bootstrap Material Design -->
+        <!-- <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script> -->
+        <!-- <script src="https://unpkg.com/popper.js@1.12.6/dist/umd/popper.js" integrity="sha384-fA23ZRQ3G/J53mElWqVJEGJzU0sTs+SvzG8fXVWP+kJQ1lwFAOkcUOysnlKJC33U" crossorigin="anonymous"></script> -->
+        <!-- <script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script> -->
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.js'></script>
+        <script src='https://cdn.firebase.com/js/client/2.2.1/firebase.js'></script>
+        <!-- chart -->
+        <canvas id="myChart" width="400" height="400"></canvas>
+        <!-- chart -->
+        <!-- Firebase App -->
+        <script src="app.js"></script>
+        <script>
+        var temperature = [], humidity = [];
+            var firebase = new Firebase("testesp-1cfa5-default-rtdb.firebaseio.com/dht11");
+            firebase.on('value', function(snapshot) {
+               for(let i in snapshot.val().temperature){
+                 temperature.push(snapshot.val().temperature[i]);
+               }
+               for(let i in snapshot.val().humidity){
+                 humidity.push(snapshot.val().humidity[i]);
+               }
+              
+              temperature = temperature.slice(temperature.length- 20, temperature.length);
+              humidity = humidity.slice(humidity.length- 20, humidity.length);
+              drawGraph(temperature, humidity);
+            });
+            
+            function drawGraph(temperature, humidity){
+              var labels = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19];
+              var ctx = document.getElementById("myChart").getContext('2d');
+            var myChart = new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: labels, 
+                datasets: [{
+                label: "temperature [°C]",
+                labelString : "°C",
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgb(255, 99, 132)',
+                fill: false,
+                data: temperature,
+                  yAxisID: "y-axis-temp",
+                },
+                 {
+                        label: "humidity [%RH]",
+                       labelString : "hum",
+            
+                borderColor: 'rgb(0, 99, 132)',
+                backgroundColor: 'rgb(0, 99, 132)',
+                fill: false,
+                data: humidity,
+                  yAxisID: "y-axis-temp",         
+                           
+              }]
+              },
+                        options: {
+                            responsive: true,
+                          maintainAspectRatio: false,
+                          hoverMode: 'index',
+                            stacked: false,
+                            title:{
+                                display: true,
+                                text:'Last 20 room measurements'
+                            },
+            
+                            scales: {
+                                yAxes: [{
+                                    type: "linear", 
+                                    display: true,
+                                    position: "left",
+                                    id: "y-axis-temp",
+                                    ticks: {
+                                      beginAtZero:true,
+                                      suggestedMax: 50
+                                    }
+                          
+                                }],
+                            }
+                        }
+            });
+            }
+            </script>
+    </body>
+</html>
