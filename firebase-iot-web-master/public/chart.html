@@ -1,0 +1,97 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<script src="https://code.iconify.design/1/1.0.6/iconify.min.js"></script>
+<div class="pos-f-t">
+     <div class="collapse" id="navbarToggleExternalContent">
+       <div class="bg-dark p-4">
+         <h4 class="text-white">Collapsed content</h4>
+         <span class="text-muted">Toggleable via the navbar brand.</span>
+       </div>
+     </div>
+     <nav class="navbar navbar-dark bg-dark">
+       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
+         <span class="navbar-toggler-icon"></span>
+       </button>
+       <a class="sidebar-brand d-flex align-items-center justify-content-center" style="color: aliceblue; font-size: large;" href="index.html">
+         <div class="sidebar-brand-icon rotate-n-15">
+             <span class="iconify" data-icon="flat-color-icons:like" data-height="40" data-inline="false"></span>
+         </div>
+         <div class="title"><b>Hệ Thống Chống Cháy</b></div>
+      </a>
+     </nav>
+   </div>
+
+<canvas id="myChart" width="400" height="400"></canvas>;
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.js'></script>
+<script src='https://cdn.firebase.com/js/client/2.2.1/firebase.js'></script>
+
+<script>
+     var temperature = [], humidity = [];
+         var firebase = new Firebase("testesp-1cfa5-default-rtdb.firebaseio.com/dht11");
+         firebase.on('value', function(snapshot) {
+            for(let i in snapshot.val().temperature){
+              temperature.push(snapshot.val().temperature[i]);
+            }
+            for(let i in snapshot.val().humidity){
+              humidity.push(snapshot.val().humidity[i]);
+            }
+           
+           temperature = temperature.slice(temperature.length- 20, temperature.length);
+           humidity = humidity.slice(humidity.length- 20, humidity.length);
+           drawGraph(temperature, humidity);
+         });
+         
+         function drawGraph(temperature, humidity){
+           var labels = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19];
+           var ctx = document.getElementById("myChart").getContext('2d');
+         var myChart = new Chart(ctx, {
+           type: 'line',
+           data: {
+             labels: labels, 
+             datasets: [{
+             label: "temperature [°C]",
+             labelString : "°C",
+             borderColor: 'rgb(255, 99, 132)',
+             backgroundColor: 'rgb(255, 99, 132)',
+             fill: false,
+             data: temperature,
+               yAxisID: "y-axis-temp",
+             },
+              {
+                     label: "humidity [%RH]",
+                    labelString : "hum",
+         
+             borderColor: 'rgb(0, 99, 132)',
+             backgroundColor: 'rgb(0, 99, 132)',
+             fill: false,
+             data: humidity,
+               yAxisID: "y-axis-temp",         
+                        
+           }]
+           },
+                     options: {
+                         responsive: true,
+                       maintainAspectRatio: false,
+                       hoverMode: 'index',
+                         stacked: false,
+                         title:{
+                             display: true,
+                             text:'Last 20 room measurements'
+                         },
+         
+                         scales: {
+                             yAxes: [{
+                                 type: "linear", 
+                                 display: true,
+                                 position: "left",
+                                 id: "y-axis-temp",
+                                 ticks: {
+                                   beginAtZero:true,
+                                   suggestedMax: 50
+                                 }
+                       
+                             }],
+                         }
+                     }
+         });
+         }
+         </script>
